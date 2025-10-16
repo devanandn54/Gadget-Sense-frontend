@@ -113,12 +113,45 @@ const GadgetSense = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 p-0.5 relative overflow-hidden">
+                <svg viewBox="0 0 512 512" className="w-full h-full">
+                  {/* Background */}
+                  <rect width="512" height="512" fill="#ffffff"/>
+                  
+                  {/* Icon: Stacked Devices with Search - SCALED UP */}
+                  <g transform="translate(256, 280) scale(1.4)">
+                    {/* Laptop (back layer) */}
+                    <g opacity="0.35">
+                      <rect x="-120" y="-90" width="240" height="160" rx="12" fill="none" stroke="#000000" strokeWidth="14"/>
+                      <rect x="-135" y="70" width="270" height="14" rx="7" fill="#000000"/>
+                    </g>
+                    
+                    {/* Tablet (middle layer) */}
+                    <g opacity="0.55">
+                      <rect x="-80" y="-70" width="160" height="220" rx="16" fill="none" stroke="#000000" strokeWidth="14"/>
+                      <circle cx="0" cy="130" r="14" fill="#000000"/>
+                    </g>
+                    
+                    {/* Phone (front layer) */}
+                    <g>
+                      <rect x="-50" y="-40" width="100" height="170" rx="14" fill="#000000"/>
+                      <rect x="-42" y="-28" width="84" height="140" rx="6" fill="#ffffff"/>
+                      <circle cx="0" cy="120" r="10" fill="#000000"/>
+                    </g>
+                    
+                    {/* Search/Magnifier - Larger and bolder */}
+                    <g transform="translate(95, -70)">
+                      <circle cx="0" cy="0" r="32" fill="none" stroke="#000000" strokeWidth="14"/>
+                      <line x1="22" y1="22" x2="46" y2="46" stroke="#000000" strokeWidth="14" strokeLinecap="round"/>
+                    </g>
+                  </g>
+                </svg>
               </div>
               <div>
                 <h1 className="text-lg sm:text-2xl font-bold tracking-tight">Gadget Sense</h1>
-                <p className="text-xs text-gray-400 hidden sm:block">AI-Powered Tech Analysis</p>
+                <p className="text-[9px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium">
+                  Know Before You Buy
+                </p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-0.5">
