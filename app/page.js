@@ -80,6 +80,11 @@ const GadgetSense = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: trimmedUrl })
       });
+      // const response = await fetch('http://localhost:3001/api/analyze', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ url: trimmedUrl })
+      // });
 
       if (!response.ok) throw new Error('Analysis failed');
       
@@ -206,7 +211,7 @@ const GadgetSense = () => {
                   value={url}
                   onChange={handleUrlChange}
                   onKeyPress={(e) => e.key === 'Enter' && !loading && isUrlValid && !isSameUrl && url.trim() && analyzeProduct()}
-                  placeholder="https://www.amazon.com/laptop-xyz..."
+                  placeholder="https://www.amazon.com/laptop-xyz or amazon.in or flipkart.com..."
                   className={`w-full px-4 sm:px-6 py-4 sm:py-5 bg-white/5 border ${
                     url.trim() && !isUrlValid ? 'border-red-500/50' : 'border-gray-800'
                   } rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-white/30 transition-all pr-12 sm:pr-14`}
@@ -293,7 +298,9 @@ const GadgetSense = () => {
                 </div>
                 {result.product?.price && (
                   <div className="text-left sm:text-right w-full sm:w-auto">
-                    <div className="text-2xl sm:text-3xl font-bold">${result.product.price}</div>
+                    <div className="text-2xl sm:text-3xl font-bold">
+                      {result.product?.currency === 'INR' ? '₹' : '$'}{result.product.price.toLocaleString()}
+                    </div>
                     <div className="text-xs text-gray-500">{result.product?.currency || 'USD'}</div>
                   </div>
                 )}
