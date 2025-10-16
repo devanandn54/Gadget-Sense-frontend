@@ -32,7 +32,7 @@ const GadgetSense = () => {
 
     try {
       // Replace with your actual API endpoint
-      const response = await fetch('http://localhost:3001/api/analyze', {
+      const response = await fetch('gadget-sense-backend-production.up.railway.app', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
