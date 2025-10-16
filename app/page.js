@@ -8,6 +8,23 @@ const GadgetSense = () => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [lastAnalyzedUrl, setLastAnalyzedUrl] = useState('');
+
+  // URL validation function
+  const isValidUrl = (string) => {
+    try {
+      const urlObj = new URL(string);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch (err) {
+      return false;
+    }
+  };
+
+  // Check if URL is valid in real-time
+  const isUrlValid = isValidUrl(url.trim());
+
+  // Check if it's the same URL as last analyzed
+  const isSameUrl = url.trim() === lastAnalyzedUrl;
 
   const clearUrl = () => {
     setUrl('');
@@ -18,11 +35,38 @@ const GadgetSense = () => {
     setResult(null);
     setUrl('');
     setError('');
+    setLastAnalyzedUrl('');
+  };
+
+  const handleUrlChange = (e) => {
+    const newUrl = e.target.value;
+    setUrl(newUrl);
+    
+    // Clear error when user starts typing
+    if (error) setError('');
+    
+    // Show validation error only if user has typed something and it's not valid
+    if (newUrl.trim() && !isValidUrl(newUrl.trim())) {
+      setError('Please enter a valid URL (e.g., https://www.amazon.com/product)');
+    }
   };
 
   const analyzeProduct = async () => {
-    if (!url.trim()) {
+    const trimmedUrl = url.trim();
+
+    // Validation checks
+    if (!trimmedUrl) {
       setError('Please enter a product URL');
+      return;
+    }
+
+    if (!isValidUrl(trimmedUrl)) {
+      setError('Please enter a valid URL starting with http:// or https://');
+      return;
+    }
+
+    if (trimmedUrl === lastAnalyzedUrl) {
+      setError('This URL has already been analyzed. Enter a different URL or click "Analyze New Product" to start fresh.');
       return;
     }
 
@@ -31,17 +75,17 @@ const GadgetSense = () => {
     setResult(null);
 
     try {
-      // Replace with your actual API endpoint
       const response = await fetch('https://gadget-sense-backend-production.up.railway.app/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url: trimmedUrl })
       });
 
       if (!response.ok) throw new Error('Analysis failed');
       
       const data = await response.json();
       setResult(data);
+      setLastAnalyzedUrl(trimmedUrl); // Save the analyzed URL
     } catch (err) {
       setError(err.message || 'Failed to analyze product. Please try again.');
     } finally {
@@ -63,7 +107,7 @@ const GadgetSense = () => {
   };
 
   return (
-     <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <header className="border-b border-gray-800 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
@@ -77,9 +121,11 @@ const GadgetSense = () => {
                 <p className="text-xs text-gray-400 hidden sm:block">AI-Powered Tech Analysis</p>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-xs text-gray-500 hidden sm:block">Built by</div>
-              <div className="text-xs sm:text-sm font-semibold">Devanand</div>
+            <div className="flex flex-col items-end gap-0.5">
+              <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider font-medium">Built by</div>
+              <div className="text-sm sm:text-base font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                Devanand
+              </div>
             </div>
           </div>
         </div>
@@ -125,10 +171,12 @@ const GadgetSense = () => {
                 <input
                   type="text"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !loading && url.trim() && analyzeProduct()}
+                  onChange={handleUrlChange}
+                  onKeyPress={(e) => e.key === 'Enter' && !loading && isUrlValid && !isSameUrl && url.trim() && analyzeProduct()}
                   placeholder="https://www.amazon.com/laptop-xyz..."
-                  className="w-full px-4 sm:px-6 py-4 sm:py-5 bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-white/30 transition-all pr-12 sm:pr-14"
+                  className={`w-full px-4 sm:px-6 py-4 sm:py-5 bg-white/5 border ${
+                    url.trim() && !isUrlValid ? 'border-red-500/50' : 'border-gray-800'
+                  } rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-white/30 transition-all pr-12 sm:pr-14`}
                   disabled={loading}
                 />
                 {url && !loading && (
@@ -143,8 +191,9 @@ const GadgetSense = () => {
               </div>
               <button
                 onClick={analyzeProduct}
-                disabled={loading || !url.trim()}
+                disabled={loading || !url.trim() || !isUrlValid || isSameUrl}
                 className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 bg-white text-black rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm sm:text-base"
+                title={isSameUrl ? 'This URL has already been analyzed' : !isUrlValid ? 'Please enter a valid URL' : ''}
               >
                 {loading ? (
                   <>
