@@ -1,29 +1,33 @@
 'use client'
 import React, { useState } from 'react';
-import { Search, AlertCircle, CheckCircle, XCircle, Loader2, Cpu, HardDrive, MemoryStick, Monitor, DollarSign, TrendingUp, TrendingDown, Minus, X, Plus, Sparkles } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle, XCircle, Loader2, Cpu, HardDrive, MemoryStick, Monitor, TrendingUp, TrendingDown, Minus, X, Plus, Sparkles, MessageSquare, Goal, CircleCheckBig, MessageCircleWarning, ChartColumnStacked, UserRoundCheck, CircleDollarSign, Lightbulb, Gamepad2, Briefcase, Code, Palette, GraduationCap, Building2, Globe, BarChart3, Settings, Play, Plane, Wallet, ChevronDown, Trophy, HelpCircle, User } from 'lucide-react';
 
 const GadgetSense = () => {
   const [url, setUrl] = useState('');
+  const [purpose, setPurpose] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [lastAnalyzedUrl, setLastAnalyzedUrl] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // URL validation function
-  const isValidUrl = (string) => {
-    try {
-      const urlObj = new URL(string);
-      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
-    } catch (err) {
-      return false;
-    }
-  };
+  const laptopPurposes = [
+    { value: '', label: 'Select your primary use case...', icon: null },
+    { value: 'gaming', label: 'Gaming & Entertainment', icon: Gamepad2, description: 'High-end gaming, streaming, VR' },
+    { value: 'work-office', label: 'Office Work & Productivity', icon: Briefcase, description: 'Documents, spreadsheets, presentations, video calls' },
+    { value: 'programming', label: 'Programming & Development', icon: Code, description: 'Coding, software development, web development' },
+    { value: 'content-creation', label: 'Content Creation', icon: Palette, description: 'Video editing, photo editing, graphic design' },
+    { value: 'student', label: 'Student Use', icon: GraduationCap, description: 'Research, assignments, online classes, note-taking' },
+    { value: 'business', label: 'Business & Professional', icon: Building2, description: 'Meetings, presentations, business applications' },
+    { value: 'casual', label: 'Casual Use', icon: Globe, description: 'Web browsing, social media, streaming videos' },
+    { value: 'data-science', label: 'Data Science & Analytics', icon: BarChart3, description: 'Machine learning, data analysis, statistical computing' },
+    { value: 'engineering', label: 'Engineering & CAD', icon: Settings, description: 'CAD software, 3D modeling, engineering simulations' },
+    { value: 'media-consumption', label: 'Media & Entertainment', icon: Play, description: 'Movies, music, reading, light gaming' },
+    { value: 'travel', label: 'Travel & Portability', icon: Plane, description: 'Lightweight, long battery life, mobile work' },
+    { value: 'budget', label: 'Budget-Conscious', icon: Wallet, description: 'Best value for money, basic computing needs' }
+  ];
 
-  // Check if URL is valid in real-time
-  const isUrlValid = isValidUrl(url.trim());
-
-  // Check if it's the same URL as last analyzed
   const isSameUrl = url.trim() === lastAnalyzedUrl;
 
   const clearUrl = () => {
@@ -34,34 +38,29 @@ const GadgetSense = () => {
   const resetAnalysis = () => {
     setResult(null);
     setUrl('');
+    setPurpose('');
     setError('');
     setLastAnalyzedUrl('');
+    setDropdownOpen(false);
   };
 
   const handleUrlChange = (e) => {
     const newUrl = e.target.value;
     setUrl(newUrl);
-    
-    // Clear error when user starts typing
+    if (dropdownOpen) setDropdownOpen(false);
     if (error) setError('');
-    
-    // Show validation error only if user has typed something and it's not valid
-    if (newUrl.trim() && !isValidUrl(newUrl.trim())) {
-      setError('Please enter a valid URL (e.g., https://www.amazon.com/product)');
-    }
   };
 
   const analyzeProduct = async () => {
     const trimmedUrl = url.trim();
 
-    // Validation checks
     if (!trimmedUrl) {
       setError('Please enter a product URL');
       return;
     }
 
-    if (!isValidUrl(trimmedUrl)) {
-      setError('Please enter a valid URL starting with http:// or https://');
+    if (!purpose) {
+      setError('Please select your primary use case for this laptop');
       return;
     }
 
@@ -73,24 +72,23 @@ const GadgetSense = () => {
     setLoading(true);
     setError('');
     setResult(null);
+    setDropdownOpen(false);
 
     try {
-      const response = await fetch('https://gadget-sense-backend-production.up.railway.app/api/analyze', {
+      const response = await fetch('http://localhost:3001/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: trimmedUrl })
+        body: JSON.stringify({ 
+          url: trimmedUrl,
+          purpose: purpose
+        })
       });
-      // const response = await fetch('http://localhost:3001/api/analyze', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ url: trimmedUrl })
-      // });
 
       if (!response.ok) throw new Error('Analysis failed');
       
       const data = await response.json();
       setResult(data);
-      setLastAnalyzedUrl(trimmedUrl); // Save the analyzed URL
+      setLastAnalyzedUrl(trimmedUrl);
     } catch (err) {
       setError(err.message || 'Failed to analyze product. Please try again.');
     } finally {
@@ -113,38 +111,27 @@ const GadgetSense = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <header className="border-b border-gray-800 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 p-0.5 relative overflow-hidden">
                 <svg viewBox="0 0 512 512" className="w-full h-full">
-                  {/* Background */}
                   <rect width="512" height="512" fill="#ffffff"/>
-                  
-                  {/* Icon: Stacked Devices with Search - SCALED UP */}
                   <g transform="translate(256, 280) scale(1.4)">
-                    {/* Laptop (back layer) */}
                     <g opacity="0.35">
                       <rect x="-120" y="-90" width="240" height="160" rx="12" fill="none" stroke="#000000" strokeWidth="14"/>
                       <rect x="-135" y="70" width="270" height="14" rx="7" fill="#000000"/>
                     </g>
-                    
-                    {/* Tablet (middle layer) */}
                     <g opacity="0.55">
                       <rect x="-80" y="-70" width="160" height="220" rx="16" fill="none" stroke="#000000" strokeWidth="14"/>
                       <circle cx="0" cy="130" r="14" fill="#000000"/>
                     </g>
-                    
-                    {/* Phone (front layer) */}
                     <g>
                       <rect x="-50" y="-40" width="100" height="170" rx="14" fill="#000000"/>
                       <rect x="-42" y="-28" width="84" height="140" rx="6" fill="#ffffff"/>
                       <circle cx="0" cy="120" r="10" fill="#000000"/>
                     </g>
-                    
-                    {/* Search/Magnifier - Larger and bolder */}
                     <g transform="translate(95, -70)">
                       <circle cx="0" cy="0" r="32" fill="none" stroke="#000000" strokeWidth="14"/>
                       <line x1="22" y1="22" x2="46" y2="46" stroke="#000000" strokeWidth="14" strokeLinecap="round"/>
@@ -169,9 +156,7 @@ const GadgetSense = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Disclaimer */}
         {showDisclaimer && (
           <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-yellow-500/5 border border-yellow-500/20 rounded-xl sm:rounded-2xl relative">
             <button
@@ -194,7 +179,6 @@ const GadgetSense = () => {
           </div>
         )}
 
-        {/* Search Section */}
         <div className="mb-8 sm:mb-12">
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent px-4">
@@ -203,45 +187,126 @@ const GadgetSense = () => {
             <p className="text-gray-400 text-sm sm:text-lg px-4">Paste a product URL to get instant AI-powered insights</p>
           </div>
 
-          <div className="relative max-w-3xl mx-auto">
-            <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={url}
-                  onChange={handleUrlChange}
-                  onKeyPress={(e) => e.key === 'Enter' && !loading && isUrlValid && !isSameUrl && url.trim() && analyzeProduct()}
-                  placeholder="https://www.amazon.com/laptop-xyz or amazon.in or flipkart.com..."
-                  className={`w-full px-4 sm:px-6 py-4 sm:py-5 bg-white/5 border ${
-                    url.trim() && !isUrlValid ? 'border-red-500/50' : 'border-gray-800'
-                  } rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-white/30 transition-all pr-12 sm:pr-14`}
-                  disabled={loading}
+          <div className="relative max-w-3xl mx-auto space-y-4">
+            <div className="relative">
+              <input
+                type="text"
+                value={url}
+                onChange={handleUrlChange}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && !isSameUrl && url.trim() && purpose && analyzeProduct()}
+                placeholder="https://www.amazon.com/product or amazon.in or flipkart.com or bestbuy.com..."
+                className="w-full px-4 sm:px-6 py-4 sm:py-5 bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-white/30 transition-all pr-12 sm:pr-14"
+                disabled={loading}
+              />
+              {url && !loading && (
+                <button
+                  onClick={clearUrl}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all"
+                  title="Clear URL"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => !loading && !result && setDropdownOpen(!dropdownOpen)}
+                className={`w-full px-4 sm:px-6 py-4 sm:py-5 bg-white/5 border ${
+                  !purpose && url.trim() ? 'border-yellow-500/50' : 'border-gray-800'
+                } rounded-xl sm:rounded-2xl text-white text-sm sm:text-base focus:outline-none focus:border-white/30 transition-all flex items-center justify-between ${
+                  (loading || result) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-white/20'
+                }`}
+                disabled={loading || result}
+              >
+                <div className="flex items-center gap-3">
+                  {purpose && laptopPurposes.find(p => p.value === purpose)?.icon ? 
+                    React.createElement(laptopPurposes.find(p => p.value === purpose).icon, {
+                      className: "w-5 h-5 text-gray-400 flex-shrink-0"
+                    }) :
+                    <Goal className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                  }
+                  <span className="text-left">
+                    {purpose ? laptopPurposes.find(p => p.value === purpose)?.label : 'Select your primary use case...'}
+                    {result && <span className="ml-2 text-xs text-gray-500">(locked)</span>}
+                  </span>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {dropdownOpen && !loading && !result && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto">
+                  {laptopPurposes.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setPurpose(option.value);
+                        setDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center gap-3 ${
+                        purpose === option.value ? 'bg-white/5 text-white' : 'text-gray-300'
+                      } ${option.value === '' ? 'border-b border-gray-700' : ''}`}
+                      disabled={loading}
+                    >
+                      {option.icon ? 
+                        React.createElement(option.icon, {
+                          className: "w-4 h-4 flex-shrink-0"
+                        }) :
+                        <div className="w-4 h-4 flex-shrink-0" />
+                      }
+                      <span className="text-sm">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {dropdownOpen && (
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setDropdownOpen(false)}
                 />
-                {url && !loading && (
-                  <button
-                    onClick={clearUrl}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all"
-                    title="Clear URL"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+              )}
+            </div>
+
+            {purpose && (
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  {laptopPurposes.find(p => p.value === purpose)?.icon && 
+                    React.createElement(laptopPurposes.find(p => p.value === purpose).icon, {
+                      className: "w-4 h-4 text-white"
+                    })
+                  }
+                  <span className="text-sm font-medium text-white">
+                    {laptopPurposes.find(p => p.value === purpose)?.label}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-400">
+                  {laptopPurposes.find(p => p.value === purpose)?.description}
+                </p>
               </div>
+            )}
+
+            <div className="flex justify-center">
               <button
                 onClick={analyzeProduct}
-                disabled={loading || !url.trim() || !isUrlValid || isSameUrl}
-                className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 bg-white text-black rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm sm:text-base"
-                title={isSameUrl ? 'This URL has already been analyzed' : !isUrlValid ? 'Please enter a valid URL' : ''}
+                disabled={loading || !url.trim() || !purpose || isSameUrl}
+                className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-white text-black rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm sm:text-base"
+                title={
+                  isSameUrl ? 'This URL has already been analyzed' : 
+                  !purpose ? 'Please select your use case' : ''
+                }
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing
+                    Analyzing for {laptopPurposes.find(p => p.value === purpose)?.label}
                   </>
                 ) : (
                   <>
                     <Search className="w-5 h-5" />
-                    Analyze
+                    Analyze for {purpose ? laptopPurposes.find(p => p.value === purpose)?.label : 'Your Use Case'}
                   </>
                 )}
               </button>
@@ -256,7 +321,6 @@ const GadgetSense = () => {
           )}
         </div>
 
-        {/* Loading Animation */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-12 sm:py-20">
             <div className="relative">
@@ -271,10 +335,8 @@ const GadgetSense = () => {
           </div>
         )}
 
-        {/* Results */}
         {result && !loading && (
           <div className="space-y-4 sm:space-y-6 animate-fade-in">
-            {/* New URL Button */}
             <div className="flex justify-end">
               <button
                 onClick={resetAnalysis}
@@ -285,7 +347,6 @@ const GadgetSense = () => {
               </button>
             </div>
 
-            {/* Product Info */}
             <div className="bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start justify-between mb-4 sm:mb-6 gap-4">
                 <div className="flex-1 w-full">
@@ -306,7 +367,6 @@ const GadgetSense = () => {
                 )}
               </div>
 
-              {/* Verdict */}
               <div className={`${getVerdictConfig(result.analysis?.verdict).bg} border border-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-6`}>
                 <div className="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-3">
                   {React.createElement(getVerdictConfig(result.analysis?.verdict).icon, {
@@ -324,9 +384,7 @@ const GadgetSense = () => {
               </div>
             </div>
 
-            {/* Specs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              {/* Processor */}
               {result.extractedSpecs?.processor?.model && (
                 <div className="bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-3 mb-3 sm:mb-4">
@@ -349,7 +407,6 @@ const GadgetSense = () => {
                 </div>
               )}
 
-              {/* RAM */}
               {result.extractedSpecs?.ram?.amount && (
                 <div className="bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-3 mb-3 sm:mb-4">
@@ -367,7 +424,6 @@ const GadgetSense = () => {
                 </div>
               )}
 
-              {/* Storage */}
               {result.extractedSpecs?.storage?.size && (
                 <div className="bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-3 mb-3 sm:mb-4">
@@ -387,7 +443,6 @@ const GadgetSense = () => {
                 </div>
               )}
 
-              {/* Display */}
               {result.extractedSpecs?.display?.size && (
                 <div className="bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-3 mb-3 sm:mb-4">
@@ -411,9 +466,7 @@ const GadgetSense = () => {
               )}
             </div>
 
-            {/* Analysis Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-              {/* Red Flags */}
               {result.analysis?.redFlags?.length > 0 && (
                 <div className="bg-red-500/5 border border-red-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
@@ -422,8 +475,8 @@ const GadgetSense = () => {
                   </div>
                   <ul className="space-y-2 sm:space-y-3">
                     {result.analysis.redFlags.map((flag, idx) => (
-                      <li key={idx} className="text-xs sm:text-sm text-gray-300 flex gap-2">
-                        <span className="text-red-500 flex-shrink-0">•</span>
+                      <li key={idx} className="text-xs sm:text-sm text-gray-300 flex gap-2 items-start">
+                        <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                         <span>{flag.message}</span>
                       </li>
                     ))}
@@ -431,7 +484,6 @@ const GadgetSense = () => {
                 </div>
               )}
 
-              {/* Warnings */}
               {result.analysis?.warnings?.length > 0 && (
                 <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
@@ -440,8 +492,8 @@ const GadgetSense = () => {
                   </div>
                   <ul className="space-y-2 sm:space-y-3">
                     {result.analysis.warnings.map((warning, idx) => (
-                      <li key={idx} className="text-xs sm:text-sm text-gray-300 flex gap-2">
-                        <span className="text-yellow-500 flex-shrink-0">•</span>
+                      <li key={idx} className="text-xs sm:text-sm text-gray-300 flex gap-2 items-start">
+                        <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
                         <span>{warning.message}</span>
                       </li>
                     ))}
@@ -449,7 +501,6 @@ const GadgetSense = () => {
                 </div>
               )}
 
-              {/* Good Indicators */}
               {result.analysis?.goodIndicators?.length > 0 && (
                 <div className="bg-green-500/5 border border-green-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-6">
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
@@ -458,8 +509,8 @@ const GadgetSense = () => {
                   </div>
                   <ul className="space-y-2 sm:space-y-3">
                     {result.analysis.goodIndicators.map((indicator, idx) => (
-                      <li key={idx} className="text-xs sm:text-sm text-gray-300 flex gap-2">
-                        <span className="text-green-500 flex-shrink-0">•</span>
+                      <li key={idx} className="text-xs sm:text-sm text-gray-300 flex gap-2 items-start">
+                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                         <span>{indicator.message}</span>
                       </li>
                     ))}
@@ -468,20 +519,241 @@ const GadgetSense = () => {
               )}
             </div>
 
-            {/* AI Recommendation */}
-            {result.aiRecommendation?.text && (
-              <div className="bg-white/5 border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-8">
-                <h4 className="font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  AI Expert Analysis
-                </h4>
-                <div className="prose prose-invert max-w-none">
-                  <pre className="whitespace-pre-wrap text-xs sm:text-sm text-gray-300 leading-relaxed font-sans">
-                    {result.aiRecommendation.text}
-                  </pre>
+            {result.reviewSummary && result.reviewSummary.summary && (
+              <div className="bg-gradient-to-br from-blue-500/5 to-purple-500/5 border border-blue-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <h4 className="font-semibold flex items-center gap-2 text-sm sm:text-base">
+                    <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    Customer Reviews Summary
+                  </h4>
+                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+                    {result.reviewSummary.rating && (
+                      <div className="flex items-center gap-1 bg-yellow-500/10 px-2 sm:px-3 py-1 rounded-lg">
+                        <span className="text-yellow-500 font-bold">{result.reviewSummary.rating}</span>
+                        <span className="text-yellow-500">⭐</span>
+                      </div>
+                    )}
+                    {result.reviewSummary.totalReviews > 0 && (
+                      <div className="text-gray-400">
+                        {result.reviewSummary.totalReviews.toLocaleString()} reviews
+                      </div>
+                    )}
+                  </div>
                 </div>
+                
+                <div className="space-y-4 text-xs sm:text-sm">
+                  {result.reviewSummary.summary.split('\n\n').map((section, idx) => {
+                    if (section.startsWith('**') && section.includes(':**')) {
+                      const heading = section.match(/\*\*(.*?):\*\*/)?.[1];
+                      const content = section.replace(/\*\*(.*?):\*\*/, '').trim();
+                      
+                      return (
+                        <div key={idx} className="space-y-2">
+                          <h5 className="font-semibold text-white text-sm sm:text-base">{heading}:</h5>
+                          {content && (
+                            <div className="text-gray-300 leading-relaxed pl-0">
+                              {content.split('\n').map((line, lineIdx) => {
+                                if (line.trim().startsWith('-')) {
+                                  return (
+                                    <div key={lineIdx} className="flex gap-2 mb-1">
+                                      <span className="text-blue-400 flex-shrink-0">•</span>
+                                      <span>{line.trim().substring(1).trim()}</span>
+                                    </div>
+                                  );
+                                }
+                                return line.trim() ? <p key={lineIdx} className="mb-1">{line}</p> : null;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    
+                    return section.trim() ? (
+                      <p key={idx} className="text-gray-300 leading-relaxed">{section}</p>
+                    ) : null;
+                  })}
+                </div>
+                
                 <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-gray-500">
-                  <span>AI-Powered Analysis</span>
+                  <span>AI-Summarized from {result.reviewSummary.reviewsAnalyzed} customer reviews</span>
+                  <span className={`px-2 py-1 rounded ${
+                    result.reviewSummary.sentiment === 'positive' ? 'bg-green-500/10 text-green-400' :
+                    result.reviewSummary.sentiment === 'negative' ? 'bg-red-500/10 text-red-400' :
+                    'bg-yellow-500/10 text-yellow-400'
+                  }`}>
+                    {result.reviewSummary.sentiment.charAt(0).toUpperCase() + result.reviewSummary.sentiment.slice(1)} Sentiment
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {result.aiRecommendation?.text && (
+              <div className="bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-transparent border border-purple-500/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+                  <h4 className="font-bold text-lg sm:text-xl flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    AI Expert Analysis
+                  </h4>
+                  {purpose && (
+                    <div className="px-3 py-1.5 bg-white/10 rounded-lg text-sm text-gray-300 flex items-center gap-2">
+                      {laptopPurposes.find(p => p.value === purpose)?.icon && 
+                        React.createElement(laptopPurposes.find(p => p.value === purpose).icon, {
+                          className: "w-4 h-4"
+                        })
+                      }
+                      <span>Analyzed for: {laptopPurposes.find(p => p.value === purpose)?.label || purpose}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  {result.aiRecommendation.text.split('\n\n').map((section, idx) => {
+                    const headingMatch = section.match(/^##\s*([^\n]+)/);
+                    if (headingMatch) {
+                      let title = headingMatch[1].trim();
+                      const content = section.replace(/^##\s*[^\n]+\n?/, '').trim();
+                      
+                      let icon = <Lightbulb />;
+                      let colorClass = 'from-blue-500/20 to-purple-500/20 border-blue-500/30';
+                      
+                      if (title.includes('[TARGET]')) {
+                        icon = <Goal />;
+                        colorClass = 'from-green-500/20 to-emerald-500/20 border-green-500/30';
+                        title = title.replace('[TARGET]', '').trim();
+                      } else if (title.includes('[LIGHTBULB]')) {
+                        icon = <Lightbulb />;
+                        colorClass = 'from-blue-500/20 to-cyan-500/20 border-blue-500/30';
+                        title = title.replace('[LIGHTBULB]', '').trim();
+                      } else if (title.includes('[CHECK]')) {
+                        icon = <CircleCheckBig />;
+                        colorClass = 'from-green-500/20 to-teal-500/20 border-green-500/30';
+                        title = title.replace('[CHECK]', '').trim();
+                      } else if (title.includes('[ALERT]')) {
+                        icon = <MessageCircleWarning />;
+                        colorClass = 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30';
+                        title = title.replace('[ALERT]', '').trim();
+                      } else if (title.includes('[MESSAGE]')) {
+                        icon = <MessageSquare />;
+                        colorClass = 'from-purple-500/20 to-pink-500/20 border-purple-500/30';
+                        title = title.replace('[MESSAGE]', '').trim();
+                      } else if (title.includes('[CHART]')) {
+                        icon = <ChartColumnStacked />;
+                        colorClass = 'from-purple-500/20 to-pink-500/20 border-purple-500/30';
+                        title = title.replace('[CHART]', '').trim();
+                      } else if (title.includes('[USER]')) {
+                        icon = <User />;
+                        colorClass = 'from-indigo-500/20 to-blue-500/20 border-indigo-500/30';
+                        title = title.replace('[USER]', '').trim();
+                      } else if (title.includes('[DOLLAR]')) {
+                        icon = <CircleDollarSign />;
+                        colorClass = 'from-amber-500/20 to-yellow-500/20 border-amber-500/30';
+                        title = title.replace('[DOLLAR]', '').trim();
+                      } else if (title.includes('[X]')) {
+                        icon = <XCircle />;
+                        colorClass = 'from-red-500/20 to-red-600/20 border-red-500/30';
+                        title = title.replace('[X]', '').trim();
+                      } else if (title.includes('[QUESTION]')) {
+                        icon = <HelpCircle />;
+                        colorClass = 'from-gray-500/20 to-gray-600/20 border-gray-500/30';
+                        title = title.replace('[QUESTION]', '').trim();
+                      } else if (title.includes('[TROPHY]')) {
+                        icon = <Trophy />;
+                        colorClass = 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30';
+                        title = title.replace('[TROPHY]', '').trim();
+                      } else if (title.includes('Should You Buy')) {
+                        icon = <Goal />;
+                        colorClass = 'from-green-500/20 to-emerald-500/20 border-green-500/30';
+                      } else if (title.includes('Why')) {
+                        icon = <Lightbulb />;
+                        colorClass = 'from-blue-500/20 to-cyan-500/20 border-blue-500/30';
+                      } else if (title.includes('Good')) {
+                        icon = <CircleCheckBig />;
+                        colorClass = 'from-green-500/20 to-teal-500/20 border-green-500/30';
+                      } else if (title.includes('Watch Out')) {
+                        icon = <MessageCircleWarning />;
+                        colorClass = 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30';
+                      } else if (title.includes('Customers Say')) {
+                        icon = <MessageSquare />;
+                        colorClass = 'from-purple-500/20 to-pink-500/20 border-purple-500/30';
+                      } else if (title.includes('Compares')) {
+                        icon = <ChartColumnStacked />;
+                        colorClass = 'from-purple-500/20 to-pink-500/20 border-purple-500/30';
+                      } else if (title.includes('Who Should')) {
+                        icon = <UserRoundCheck />;
+                        colorClass = 'from-indigo-500/20 to-blue-500/20 border-indigo-500/30';
+                      } else if (title.includes('Bottom Line')) {
+                        icon = <CircleDollarSign />;
+                        colorClass = 'from-amber-500/20 to-yellow-500/20 border-amber-500/30';
+                      }
+                      
+                      return (
+                        <div key={idx} className={`bg-gradient-to-br ${colorClass} border rounded-xl p-4 sm:p-6`}>
+                          <h5 className="font-bold text-base sm:text-lg mb-3 flex items-center gap-3">
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">{icon}</span>
+                            <span>{title}</span>
+                          </h5>
+                          <div className="space-y-2 text-sm sm:text-base text-gray-200 leading-relaxed">
+                            {content.split('\n').map((line, lineIdx) => {
+                              let cleanLine = line
+                                .replace(/\[CHECK\]/g, '✓')
+                                .replace(/\[X\]/g, '✗')
+                                .replace(/\[ALERT\]/g, '⚠')
+                                .replace(/\[TARGET\]/g, '→')
+                                .replace(/\[LIGHTBULB\]/g, '💡')
+                                .replace(/\[MESSAGE\]/g, '💬')
+                                .replace(/\[CHART\]/g, '📊')
+                                .replace(/\[USER\]/g, '👤')
+                                .replace(/\[DOLLAR\]/g, '💰')
+                                .replace(/\[QUESTION\]/g, '?')
+                                .replace(/\[TROPHY\]/g, '🏆');
+                              
+                              if (cleanLine.trim().startsWith('-')) {
+                                return (
+                                  <div key={lineIdx} className="flex gap-3 items-start">
+                                    <CheckCircle className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                    <span className="flex-1">{cleanLine.trim().substring(1).trim()}</span>
+                                  </div>
+                                );
+                              }
+                              const boldText = cleanLine.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
+                              return cleanLine.trim() ? (
+                                <p key={lineIdx} dangerouslySetInnerHTML={{ __html: boldText }} />
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+
+                {result.aiRecommendation.similarProducts && result.aiRecommendation.similarProducts.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-700">
+                    <h5 className="font-semibold text-sm mb-4 flex items-center gap-2 text-gray-300">
+                      <Search className="w-4 h-4" />
+                      Similar Products Found
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {result.aiRecommendation.similarProducts.map((product, idx) => (
+                        <div key={idx} className="bg-white/5 border border-gray-700 rounded-lg p-3">
+                          <div className="text-xs text-gray-400 mb-1">Match: {(parseFloat(product.similarity) * 100).toFixed(0)}%</div>
+                          <div className="font-medium text-sm mb-1 line-clamp-2">{product.title}</div>
+                          <div className="text-xs text-gray-400">${product.price} • {product.processor}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 pt-6 border-t border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-gray-400">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="text-gray-300">With thoughts of <span className="font-semibold text-white">Devanand</span></span>
+                  </span>
                   {result.metadata?.processingTime && (
                     <span>Analyzed in {(result.metadata.processingTime / 1000).toFixed(2)}s</span>
                   )}
@@ -492,7 +764,6 @@ const GadgetSense = () => {
         )}
       </main>
 
-      {/* About Section */}
       {!result && !loading && (
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
           <div className="bg-gradient-to-br from-white/5 to-white/0 border border-gray-800 rounded-2xl sm:rounded-3xl p-6 sm:p-12">
@@ -545,7 +816,6 @@ const GadgetSense = () => {
         </section>
       )}
 
-      {/* Footer */}
       <footer className="border-t border-gray-800 mt-12 sm:mt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-500">
           <p>Gadget Sense • AI-Powered Tech Analysis • Built by Devanand</p>
