@@ -402,6 +402,17 @@ const GadgetSense = () => {
                   </div>
                 </div>
 
+                {/* Analyze New Product Button */}
+                <div className="mt-6">
+                  <button
+                    onClick={resetAnalysis}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
+                  >
+                    <Search className="w-5 h-5" />
+                    <span>Analyze New Product</span>
+                  </button>
+                </div>
+
                 {/* Footer note */}
                 <div className="mt-6 pt-5 border-t border-gray-700/50">
                   <p className="text-gray-400 text-xs text-center">
