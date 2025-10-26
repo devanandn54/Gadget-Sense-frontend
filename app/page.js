@@ -333,33 +333,80 @@ const GadgetSense = () => {
           </div>
 
           {error && error.type === 'unsupported' && (
-            <div className="mt-4 max-w-3xl mx-auto p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-              <div className="flex items-start gap-3 mb-4">
-                <AlertCircle className="w-6 h-6 flex-shrink-0 text-yellow-400 mt-0.5" />
-                <div className="flex-1">
-                  <h3 className="text-yellow-400 font-semibold text-lg mb-2">
-                    {error.retailer?.charAt(0).toUpperCase() + error.retailer?.slice(1)} Not Supported
-                  </h3>
-                  <p className="text-gray-300 text-sm mb-4">
-                    {error.message}
-                  </p>
-                  <div className="bg-black/30 rounded-lg p-4 border border-gray-700">
-                    <p className="text-white font-medium mb-3 text-sm">✅ Supported Retailers:</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {error.supportedRetailers?.map((retailer, idx) => (
-                        <a
-                          key={idx}
-                          href={retailer.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          <span>{retailer.name}</span>
-                        </a>
-                      ))}
-                    </div>
+            <div className="mt-6 max-w-3xl mx-auto">
+              <div className="bg-gradient-to-br from-yellow-500/10 via-orange-500/10 to-red-500/10 border border-yellow-500/30 rounded-2xl p-6 sm:p-8 backdrop-blur-sm">
+                {/* Apologetic Header */}
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-6 h-6 text-yellow-400" />
                   </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-white mb-2">
+                      We're Sorry! 😔
+                    </h3>
+                    <p className="text-yellow-400 font-semibold text-lg">
+                      {error.retailer?.charAt(0).toUpperCase() + error.retailer?.slice(1)} is not supported yet
+                    </p>
+                  </div>
+                </div>
+
+                {/* Explanation */}
+                <div className="bg-black/40 rounded-xl p-5 mb-6 border border-gray-700/50">
+                  <p className="text-gray-300 leading-relaxed mb-3">
+                    As an <span className="text-white font-semibold">open-source student project</span>, we currently don't have access to the expensive proxy services ($75-500/month) needed to scrape {error.retailer?.charAt(0).toUpperCase() + error.retailer?.slice(1)}.
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    These retailers have advanced bot detection that blocks cloud servers. We'd love to support them in the future! 🙏
+                  </p>
+                </div>
+
+                {/* What to do instead */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lightbulb className="w-5 h-5 text-blue-400" />
+                    <h4 className="text-white font-semibold text-lg">Here's what you can do:</h4>
+                  </div>
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
+                    <p className="text-blue-300 text-sm leading-relaxed">
+                      <span className="font-semibold">💡 Quick Fix:</span> Search for the same product on Amazon or Best Buy and paste that link instead. Most products are available on multiple retailers!
+                    </p>
+                  </div>
+                </div>
+
+                {/* Supported Retailers */}
+                <div className="bg-gradient-to-br from-green-500/10 to-blue-500/10 rounded-xl p-5 border border-green-500/30">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <h4 className="text-white font-semibold">Retailers We Support:</h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {error.supportedRetailers?.map((retailer, idx) => (
+                      <a
+                        key={idx}
+                        href={retailer.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-3 bg-black/40 hover:bg-black/60 rounded-lg p-3 border border-gray-700 hover:border-green-500/50 transition-all duration-200"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/30 transition-colors">
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        </div>
+                        <div className="flex-1">
+                          <span className="text-white font-medium text-sm group-hover:text-green-400 transition-colors">
+                            {retailer.name}
+                          </span>
+                        </div>
+                        <Globe className="w-4 h-4 text-gray-500 group-hover:text-green-400 transition-colors" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Footer note */}
+                <div className="mt-6 pt-5 border-t border-gray-700/50">
+                  <p className="text-gray-400 text-xs text-center">
+                    Thank you for understanding! We're working hard to make GadgetSense better every day. ❤️
+                  </p>
                 </div>
               </div>
             </div>
