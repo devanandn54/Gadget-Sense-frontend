@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react';
-import { Search, AlertCircle, CheckCircle, XCircle, Loader2, Cpu, HardDrive, MemoryStick, Monitor, TrendingUp, TrendingDown, Minus, X, Plus, Sparkles, MessageSquare, Goal, CircleCheckBig, MessageCircleWarning, ChartColumnStacked, UserRoundCheck, CircleDollarSign, Lightbulb, Gamepad2, Briefcase, Code, Palette, GraduationCap, Building2, Globe, BarChart3, Settings, Play, Plane, Wallet, ChevronDown, Trophy, HelpCircle, User } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle, XCircle, Loader2, Cpu, HardDrive, MemoryStick, Monitor, TrendingUp, TrendingDown, Minus, X, Plus, Sparkles, MessageSquare, Goal, CircleCheckBig, MessageCircleWarning, ChartColumnStacked, UserRoundCheck, CircleDollarSign, Lightbulb, Gamepad2, Briefcase, Code, Palette, GraduationCap, Building2, Globe, BarChart3, Settings, Play, Plane, Wallet, ChevronDown, Trophy, HelpCircle, User, Frown, Heart, HandHeart } from 'lucide-react';
 
 const GadgetSense = () => {
   const [url, setUrl] = useState('');
@@ -310,9 +310,10 @@ const GadgetSense = () => {
             <div className="flex justify-center">
               <button
                 onClick={analyzeProduct}
-                disabled={loading || !url.trim() || !purpose || isSameUrl}
+                disabled={loading || !url.trim() || !purpose || isSameUrl || (error && error.type === 'unsupported')}
                 className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-white text-black rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm sm:text-base"
                 title={
+                  error && error.type === 'unsupported' ? 'This retailer is not supported. Please use the button below to analyze a new product.' :
                   isSameUrl ? 'This URL has already been analyzed' : 
                   !purpose ? 'Please select your use case' : ''
                 }
@@ -341,8 +342,8 @@ const GadgetSense = () => {
                     <AlertCircle className="w-6 h-6 text-yellow-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      We're Sorry! 😔
+                    <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                      We're Sorry! <Frown className="w-6 h-6 text-yellow-400" />
                     </h3>
                     <p className="text-yellow-400 font-semibold text-lg">
                       {error.retailer?.charAt(0).toUpperCase() + error.retailer?.slice(1)} is not supported yet
@@ -355,8 +356,8 @@ const GadgetSense = () => {
                   <p className="text-gray-300 leading-relaxed mb-3">
                     As an <span className="text-white font-semibold">open-source student project</span>, we currently don't have access to the expensive proxy services ($75-500/month) needed to scrape {error.retailer?.charAt(0).toUpperCase() + error.retailer?.slice(1)}.
                   </p>
-                  <p className="text-gray-400 text-sm">
-                    These retailers have advanced bot detection that blocks cloud servers. We'd love to support them in the future! 🙏
+                  <p className="text-gray-400 text-sm flex items-center gap-2">
+                    These retailers have advanced bot detection that blocks cloud servers. We'd love to support them in the future! <HandHeart className="w-4 h-4 text-purple-400" />
                   </p>
                 </div>
 
@@ -367,8 +368,9 @@ const GadgetSense = () => {
                     <h4 className="text-white font-semibold text-lg">Here's what you can do:</h4>
                   </div>
                   <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
-                    <p className="text-blue-300 text-sm leading-relaxed">
-                      <span className="font-semibold">💡 Quick Fix:</span> Search for the same product on Amazon or Best Buy and paste that link instead. Most products are available on multiple retailers!
+                    <p className="text-blue-300 text-sm leading-relaxed flex items-start gap-2">
+                      <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5 text-blue-400" />
+                      <span><span className="font-semibold">Quick Fix:</span> Search for the same product on Amazon or Best Buy and paste that link instead. Most products are available on multiple retailers!</span>
                     </p>
                   </div>
                 </div>
@@ -415,8 +417,8 @@ const GadgetSense = () => {
 
                 {/* Footer note */}
                 <div className="mt-6 pt-5 border-t border-gray-700/50">
-                  <p className="text-gray-400 text-xs text-center">
-                    Thank you for understanding! We're working hard to make GadgetSense better every day. ❤️
+                  <p className="text-gray-400 text-xs text-center flex items-center justify-center gap-2">
+                    Thank you for understanding! We're working hard to make GadgetSense better every day. <Heart className="w-4 h-4 text-red-400 fill-red-400" />
                   </p>
                 </div>
               </div>
