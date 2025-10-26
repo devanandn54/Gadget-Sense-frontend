@@ -82,15 +82,34 @@ const GadgetSense = () => {
           url: trimmedUrl,
           purpose: purpose
         })
-      });
-
-      if (!response.ok) throw new Error('Analysis failed');
+      }); 
       
       const data = await response.json();
+      
+      // Check if it's an unsupported retailer (Walmart/Target)
+      if (response.status === 422 && data.error === 'Unsupported retailer') {
+        setError({
+          type: 'unsupported',
+          retailer: data.retailer,
+          message: data.message,
+          supportedRetailers: data.supportedRetailers
+        });
+        setLoading(false);
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Analysis failed');
+      }
+      
       setResult(data);
       setLastAnalyzedUrl(trimmedUrl);
     } catch (err) {
-      setError(err.message || 'Failed to analyze product. Please try again.');
+      if (typeof err === 'object' && err.type === 'unsupported') {
+        setError(err);
+      } else {
+        setError({ type: 'error', message: err.message || 'Failed to analyze product. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -313,10 +332,43 @@ const GadgetSense = () => {
             </div>
           </div>
 
-          {error && (
+          {error && error.type === 'unsupported' && (
+            <div className="mt-4 max-w-3xl mx-auto p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+              <div className="flex items-start gap-3 mb-4">
+                <AlertCircle className="w-6 h-6 flex-shrink-0 text-yellow-400 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-yellow-400 font-semibold text-lg mb-2">
+                    {error.retailer?.charAt(0).toUpperCase() + error.retailer?.slice(1)} Not Supported
+                  </h3>
+                  <p className="text-gray-300 text-sm mb-4">
+                    {error.message}
+                  </p>
+                  <div className="bg-black/30 rounded-lg p-4 border border-gray-700">
+                    <p className="text-white font-medium mb-3 text-sm">✅ Supported Retailers:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {error.supportedRetailers?.map((retailer, idx) => (
+                        <a
+                          key={idx}
+                          href={retailer.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>{retailer.name}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {error && error.type === 'error' && (
             <div className="mt-4 max-w-3xl mx-auto p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center gap-3 text-sm">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <span>{error}</span>
+              <span>{error.message}</span>
             </div>
           )}
         </div>
